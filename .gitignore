@@ -127,11 +127,3 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
-
-# Carpetas en la Raiz del proyecto
-proformas/
-
-bot.py
-telegram/
-tempro/migrations/
-backend/migrations/
