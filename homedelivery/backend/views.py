@@ -25,7 +25,6 @@ from .models import *
 from django.conf import settings
 from django.dispatch import receiver
 from django.core.mail import EmailMessage
-from django_rest_passwordreset.signals import reset_password_token_created
 from django.urls import reverse
 from django.template.loader import render_to_string
 # Utiles
@@ -39,10 +38,50 @@ import requests
 import datetime
 """ Vistas """
 class PerfilVS(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
+    permission_classes=[AllowAny]
     queryset=Perfil.objects.all()
     serializer_class=PerfilSerializer
+    def create(self, request):
+        serializer=self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers=self.get_success_headers(serializer.data)
+        return Response(serializer.data,status=status.HTTP_201_CREATED,headers=headers)
 class DeliverVS(viewsets.ModelViewSet):
     permission_classes=[IsAuthenticated]
     queryset=Deliver.objects.all()
     serializer_class=DeliverSerializer
+class TiendaVS(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
+    queryset=Tienda.objects.all()
+    serializer_class=TiendaSerializer
+class CategoriaVS(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
+    queryset=Categoria.objects.all()
+    serializer_class=CategoriaSerializer
+class ProductoVS(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
+    queryset=Producto.objects.all()
+    serializer_class=ProductoSerializer
+class DetalleProductoVS(viewsets.ModelViewSet):
+    permission_classes=[IsAuthenticated]
+    queryset=DetalleProducto.objects.all()
+    serializer_class=DetalleProductoSerializer
+@api_view(["POST"])
+@csrf_exempt
+@permission_classes([AllowAny])
+def verificar_perfil(request):
+    data=request.data
+    respuesta={}
+    try:
+        perfil=Perfil.objects.get(wallet__exact=data['wallet'])
+        respuesta['id']=perfil.id
+        respuesta['nombre']=perfil.nombre
+        respuesta['wallet']=perfil.wallet
+        respuesta['delivery']=perfil.delivery
+        respuesta['vendedor']=perfil.vendedor
+        respuesta['telefono']=perfil.telefono
+        respuesta['direccion']=perfil.direccion
+    except:
+        respuesta['wallet']=data['wallet']
+    return Response(respuesta)

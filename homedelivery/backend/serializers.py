@@ -19,3 +19,19 @@ class DeliverSerializer(serializers.ModelSerializer):
     u_nombre = serializers.SerializerMethodField('LoadNombreUsuario')
     def LoadNombreUsuario(self, obj):
         return obj.usuario.nombre
+class TiendaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tienda
+        fields = '__all__'
+class CategoriaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Categoria
+        fields = '__all__'
+class ProductoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Producto
+        fields = '__all__'
+class DetalleProductoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DetalleProducto
+        fields = '__all__'
