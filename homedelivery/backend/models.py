@@ -30,30 +30,3 @@ class Deliver(models.Model):
             usuario.save()
     def __str__(self):
         return '%s/Vehiculo (%s)'%(self.perfil.nombre,self.id)
-class Tienda(models.Model):
-    perfil=models.ForeignKey(Perfil,null=False,on_delete=models.CASCADE)
-    nombre=models.TextField(null=False,blank=False)
-    wallet=models.TextField(null=False,blank=False)
-    telefono=models.CharField(max_length=32, null=False,blank=False)
-    direcion=models.TextField(null=False,blank=False)
-    def save(self):
-        self.wallet = self.perfil.wallet
-        super().save()
-    def __str__(self):
-        return '%s/Vehiculo (%s)'%(self.perfil.nombre,self.id)
-class Categoria(models.Model):
-    nombre=models.CharField(max_length=32,null=False,blank=False)
-class Producto(models.Model):
-    tienda=models.ForeignKey(Tienda,null=False,on_delete=models.CASCADE)
-    nombre=models.TextField(null=False,blank=False)
-    def __str__(self):
-        return '%s/ (%s)'%(self.perfil.nombre,self.id)
-
-class DetalleProducto(models.Model):
-    producto=models.ForeignKey(Producto, null=False,on_delete=models.CASCADE)
-    imagen=models.ImageField(upload_to='productos',null=False)
-    nombre=models.TextField(null=False,blank=False)
-    descripcion=models.TextField(null=True,blank=False)
-    precio=models.FloatField(null=False,default=0.0)
-    def __str__(self):
-        return '%s/Vehiculo (%s)'%(self.perfil.nombre,self.id)
