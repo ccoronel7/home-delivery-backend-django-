@@ -69,8 +69,3 @@ def verificar_perfil(request):
     except:
         respuesta['wallet']=data['wallet']
     return Response(respuesta)
-# @api_view(["GET"])
-# @csrf_exempt
-# @permission_classes([AllowAny])
-# def prueba(r):
-#     return folium.Map()
