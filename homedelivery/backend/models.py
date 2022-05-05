@@ -41,16 +41,11 @@ class Tienda(models.Model):
         super().save()
     def __str__(self):
         return '%s'%(self.nombre)
-class Categoria(models.Model):
-    nombre=models.CharField(max_length=32,null=False,blank=False)
-    def __str__(self):
-        return '%s'%(self.nombre)
 class Producto(models.Model):
     tienda=models.ForeignKey(Tienda,null=False,on_delete=models.CASCADE)
     nombre=models.TextField(null=False,blank=False)
     def __str__(self):
         return '%s (%s)'%(self.nombre,self.tienda.nombre)
-
 class DetalleProducto(models.Model):
     producto=models.ForeignKey(Producto, null=False,on_delete=models.CASCADE)
     imagen=models.ImageField(upload_to='productos',null=False)
@@ -59,3 +54,7 @@ class DetalleProducto(models.Model):
     precio=models.FloatField(null=False,default=0.0)
     def __str__(self):
         return '%s (%s)'%(self.nombre,self.producto.nombre)
+class Categoria(models.Model):
+    nombre=models.CharField(max_length=32,null=False,blank=False)
+    def __str__(self):
+        return '%s'%(self.nombre)

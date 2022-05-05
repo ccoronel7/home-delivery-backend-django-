@@ -17,5 +17,6 @@ urlpatterns = [
     # Base
     path('', include(router.urls)),
     path('verificar-perfil', views.verificar_perfil),
+    path('prueba', views.prueba),
     # path('', include(router.urls)),
 ]
