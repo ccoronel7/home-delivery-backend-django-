@@ -19,28 +19,3 @@ class DeliverSerializer(serializers.ModelSerializer):
     u_nombre=serializers.SerializerMethodField('nombre_usuario')
     def nombre_usuario(self, obj):
         return obj.perfil.nombre
-class TiendaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Tienda
-        fields='__all__'
-    u_nombre=serializers.SerializerMethodField('nombre_usuario')
-    def nombre_usuario(self, obj):
-        return obj.perfil.nombre
-    categorias=serializers.SerializerMethodField('obtener_categorias')
-    def nombre_usuario(self, obj):
-        categorias=[]
-        for c in Categoria.objects.filter(producto__tienda=obj):
-            categorias.append({'nombre':c.nombre,'id':c.id})
-        return categorias
-class CategoriaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Categoria
-        fields='__all__'
-class ProductoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=Producto
-        fields='__all__'
-class DetalleProductoSerializer(serializers.ModelSerializer):
-    class Meta:
-        model=DetalleProducto
-        fields='__all__'

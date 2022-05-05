@@ -51,22 +51,6 @@ class DeliverVS(viewsets.ModelViewSet):
     permission_classes=[IsAuthenticated]
     queryset=Deliver.objects.all()
     serializer_class=DeliverSerializer
-class TiendaVS(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
-    queryset=Tienda.objects.all()
-    serializer_class=TiendaSerializer
-class CategoriaVS(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
-    queryset=Categoria.objects.all()
-    serializer_class=CategoriaSerializer
-class ProductoVS(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
-    queryset=Producto.objects.all()
-    serializer_class=ProductoSerializer
-class DetalleProductoVS(viewsets.ModelViewSet):
-    permission_classes=[IsAuthenticated]
-    queryset=DetalleProducto.objects.all()
-    serializer_class=DetalleProductoSerializer
 @api_view(["POST"])
 @csrf_exempt
 @permission_classes([AllowAny])
