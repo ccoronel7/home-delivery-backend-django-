@@ -8,4 +8,3 @@ admin.site.register(Deliver)
 # Eliminar del admin
 admin.site.unregister(Group)
 admin.site.unregister(User)
-# admin.site.unregister(Token)
