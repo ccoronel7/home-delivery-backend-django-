@@ -99,7 +99,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = '/static_homedelivery/'
+STATIC_ROOT = 'static/'
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'sbdx#rg@rmc1m-w4f=8(!2gh723%xzo9x0v(2d3c#dch(7p*ae'

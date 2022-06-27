@@ -51,6 +51,34 @@ class DeliverVS(viewsets.ModelViewSet):
     permission_classes=[IsAuthenticated]
     queryset=Deliver.objects.all()
     serializer_class=DeliverSerializer
+class ChatVS(viewsets.ModelViewSet):
+    permission_classes=[AllowAny]
+    queryset=Chat.objects.all()
+    serializer_class=ChatSerializer
+    def list(self, request, *args, **kwargs):
+        parametros = request.query_params.copy()
+        objetos = self.queryset.filter(usuarios__id=parametros['usuario'])
+        data = self.serializer_class(objetos,many=True).data
+        return Response(data,status=status.HTTP_200_OK)
+
+class MensajeVS(viewsets.ModelViewSet):
+    permission_classes=[AllowAny]
+    queryset=Mensaje.objects.all()
+    serializer_class=MensajeSerializer
+
+    def list(self, request, *args, **kwargs):
+        parametros = request.query_params.copy()
+        objetos = self.queryset.filter(chat__exact=parametros['chat'])
+        data = self.serializer_class(objetos,many=True).data
+        return Response(data,status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        mensaje = Mensaje.objects.create(chat=Chat.objects.get(id=data['roomId']),usuario=Perfil.objects.get(id=data['usuario']),content=data['content'],date='18 Mayo',timestamp='10:05',reply_to=None)
+        serializer = MensajeSerializer(mensaje)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
 @api_view(["POST"])
 @csrf_exempt
 @permission_classes([AllowAny])

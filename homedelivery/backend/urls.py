@@ -8,6 +8,8 @@ router = routers.DefaultRouter()
 # Utilidades
 router.register(r'perfiles', views.PerfilVS, basename='perfil')
 router.register(r'delivers', views.DeliverVS, basename='deliver')
+router.register(r'chats', views.ChatVS, basename='chat')
+router.register(r'mensajes', views.MensajeVS, basename='mensaje')
 # Patterns
 urlpatterns = [
     # Base

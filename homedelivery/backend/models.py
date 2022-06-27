@@ -1,6 +1,3 @@
-from pydoc import describe
-from pyexpat import model
-from tkinter import CASCADE
 from django.db import models
 class Perfil(models.Model):
     wallet=models.TextField(null=False,blank=False)
@@ -30,3 +27,40 @@ class Deliver(models.Model):
             usuario.save()
     def __str__(self):
         return '%s/Vehiculo (%s)'%(self.perfil.nombre,self.id)
+class Chat(models.Model):
+    usuarios=models.ManyToManyField(Perfil)
+    roomName=models.CharField(max_length=32,null=False,blank=False)
+    unreadCount=models.IntegerField(null=False,blank=False,default=1)
+class Mensaje(models.Model):
+    chat=models.ForeignKey(Chat,null=False,on_delete=models.DO_NOTHING)
+    usuario=models.ForeignKey(Perfil,null=False,on_delete=models.DO_NOTHING)
+    content=models.TextField(null=False,blank=False)
+    # senderid=models.CharField()
+    date=models.TextField(null=False,blank=False)
+    timestamp=models.CharField(max_length=5,null=False,blank=False)
+    system=models.BooleanField(default=False)
+    saved=models.BooleanField(default=False)
+    distributed=models.BooleanField(default=False)
+    seen=models.BooleanField(default=False)
+    deleted=models.BooleanField(default=False)
+    # failure=models.BooleanField(default=False)
+    disableActions=models.BooleanField(default=True)
+    disableReactions=models.BooleanField(default=True)
+    # files=models.CharField()
+    # reactions=models.CharField()
+    # replyMessage=models.ForeignKey()
+    reply_to=models.ForeignKey('self',null=True,on_delete=models.CASCADE)
+    def __str__(self):
+        return '%s (%s)'%(self.content,self.usuario.nombre)
+# class Reacciones(models.Model):
+#     mensaje=models.ForeignKey(Mensajes,null=False,blank=False)
+#     usuario=models.ForeignKey(Perfil,null=False,blank=False)
+#     reaccion=models.CharField(max_length=254,null=False,blank=False)
+class ArchivoMensaje(models.Model):
+    name=models.CharField(max_length=32,null=False,blank=False)
+    size=models.IntegerField(null=False,blank=False,default=19600)
+    tipo=models.CharField(max_length=5,null=False,blank=False,default='png')
+    # audio=models.BooleanField()
+    # duration=models.
+    url=models.ImageField(upload_to='mensajes',null=False)
+    # preview=models.URLField()
