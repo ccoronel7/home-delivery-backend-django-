@@ -10,6 +10,7 @@ class Perfil(models.Model):
     vendedor=models.BooleanField(default=False)
     telefono=models.CharField(max_length=32,null=False,blank=True,default='')
     direccion=models.TextField(null=False,blank=True,default='')
+    location=models.TextField(null=False,blank=True,default='')
     def __str__(self):
         tipo='Delivery' if self.delivery else 'Usuario'
         tipo='Vendedor' if self.vendedor else tipo
@@ -76,9 +77,11 @@ class Order(models.Model):
     # Client
     client=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_client')
     client_data=models.TextField(null=False)
+    client_location = models.TextField(null=False)
     # Seller
     seller=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_seller')
     seller_data=models.TextField(null=False)
+    seller_location = models.TextField(null=False)
     # Deliver
     delivery=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_delivery')
     delivery_data=models.TextField(null=True)

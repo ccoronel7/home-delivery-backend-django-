@@ -135,8 +135,8 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Order
         fields = '__all__'
-    client_name = serializers.SerializerMethodField('client_name_method')
 
+    client_name = serializers.SerializerMethodField('client_name_method')
     def client_name_method(self, obj):
         if type(obj) == type(OrderedDict()):
             for key, value in obj.items():
@@ -163,6 +163,18 @@ class OrderSerializer(serializers.ModelSerializer):
     details_count = serializers.SerializerMethodField('detail_count_method')
     def detail_count_method(self, obj):
         return OrderDetail.objects.filter(order__id=obj.id).count()
+
+    client_number = serializers.SerializerMethodField('client_number_method')
+    def client_number_method(self, obj):
+        if type(obj) == type(OrderedDict()):
+            return ''
+        return obj.client.telefono
+
+    client_number = serializers.SerializerMethodField('seller_number_method')
+    def seller_number_method(self, obj):
+        if type(obj) == type(OrderedDict()):
+            return ''
+        return obj.seller.telefono
 
 class OrderDetailSerializer(serializers.ModelSerializer): 
     class Meta: 
