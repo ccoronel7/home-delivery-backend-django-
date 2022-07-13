@@ -82,6 +82,7 @@ class Order(models.Model):
     seller=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_seller')
     seller_data=models.TextField(null=False)
     seller_location = models.TextField(null=False)
+    wallet_shop = models.TextField(null=False)
     # Deliver
     delivery=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_delivery')
     delivery_data=models.TextField(null=True)
@@ -99,9 +100,9 @@ class Order(models.Model):
 
 class OrderDetail(models.Model):
     order=models.ForeignKey(Order,null=True,on_delete=models.CASCADE)
-    contract_id=models.IntegerField(null=False)
+    # contract_id=models.IntegerField(null=False)
     name=models.TextField(null=False)
-    category=models.TextField(null=False)
+    # category=models.TextField(null=False)
     price=models.FloatField(null=False)
     def __str__(self):
         return '#%s (%s,%s)'%(self.id,self.order.id,self.name)

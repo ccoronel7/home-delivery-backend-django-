@@ -57,6 +57,14 @@ class ChatVS(viewsets.ModelViewSet):
     permission_classes=[AllowAny]
     queryset=Chat.objects.all()
     serializer_class=ChatSerializer
+    def create(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    def update(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    def destroy(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+    def retrieve(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
     def list(self, request, *args, **kwargs):
         parametros = request.query_params.copy()
         usuario = Perfil.objects.get(id=parametros['usuario'])
@@ -170,7 +178,8 @@ def verificar_perfil(request):
         respuesta['vendedor']=perfil.vendedor
         respuesta['telefono']=perfil.telefono
         respuesta['direccion']=perfil.direccion
-        respuesta['token']='perfil.direccion'
+        respuesta['location']=perfil.location
+        respuesta['token']='token xxx'
     except:
         respuesta['wallet']=data['wallet']
     return Response(respuesta)
@@ -190,9 +199,9 @@ def update_unread(request):
 @permission_classes([AllowAny])
 def order_create(request):
     data = request.data
-    client=Perfil.objects.get(id=data['client'])
+    client=Perfil.objects.get(wallet=data['client'])
     data['client_data']="{'id':%s,'name':%s,'phone':%s,'wallet':%s}"%(client.id,client.nombre,client.telefono,client.wallet)
-    seller=Perfil.objects.get(id=data['seller'])
+    seller=Perfil.objects.get(wallet=data['wallet_seller'])
     data['seller_data']="{'id':%s,'name':%s,'phone':%s,'wallet':%s}"%(seller.id,seller.nombre,seller.telefono,seller.wallet)
     pay_method=PayMethod.objects.all().first()
     pay_method_data="{'nombre':%s}"%(pay_method.name)
@@ -205,31 +214,32 @@ def order_create(request):
             # Seller,
             seller=seller,
             seller_data=data['seller_data'],
+            seller_location='',
+            wallet_shop=data['wallet_shop'],
             # Deliver
             delivery=None,
             delivery_data=None,
             # Metodo pago
             pay_method=pay_method,
             pay_method_data=pay_method_data,
-            total_price=data['total_price']
+            total_price=data['sub_total']
         )
-        if (data['details']):
+        if (data['productos']):
             total = 0.0
-            for d in data['details']:
+            for d in data['productos']:
                 total += d['price']
                 categories_string = '['
-                for c in d['category']:
-                    categories_string += '"%s",'%(c)
                 categories_string += ']'
                 detail = OrderDetail.objects.create(
                     order=order,
-                    contract_id=d['contract_id'], # id en el contrato
+                    # contract_id=d['contract_id'], # id en el contrato
                     name=d['name'], # Nombre en el contrato
-                    category=categories_string, # Categorias asociadas en el contrato
+                    # category=categories_string, # Categorias asociadas en el contrato
                     price=d['price'] # Precio obtenido del contrato
                 )
                 if detail.id:
                     details.append(detail.id)
+        # chat = Chat.objects.create(usuarios=[client,seller])
         serializer = OrderSerializer(order)
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         return Response(serializer.data,status=status.HTTP_201_CREATED) # headers=headers
@@ -240,7 +250,7 @@ def order_create(request):
                 order.delete()
         for d in details:
             OrderDetail.objects.get(id=d).delete()
-        return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR) # headers=headers
+        return Response('%s'%(e),status=status.HTTP_500_INTERNAL_SERVER_ERROR) # headers=headers
 
 @api_view(["POST"])
 @csrf_exempt
