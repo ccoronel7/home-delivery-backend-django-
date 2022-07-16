@@ -23,6 +23,7 @@ class Deliver(models.Model):
     v_modelo=models.CharField(max_length=32,null=False,blank=False)
     v_color=models.CharField(max_length=16,null=False,blank=False)
     v_placa=models.CharField(max_length=32,null=False,blank=False)
+    activo = models.BooleanField(default=False)
     def save(self):
         super().save()
         if self.id:
@@ -104,6 +105,7 @@ class OrderDetail(models.Model):
     name=models.TextField(null=False)
     # category=models.TextField(null=False)
     price=models.FloatField(null=False)
+    comment= models.TextField(null=True)
     def __str__(self):
         return '#%s (%s,%s)'%(self.id,self.order.id,self.name)
 

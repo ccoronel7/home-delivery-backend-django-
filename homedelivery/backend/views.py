@@ -111,6 +111,8 @@ class OrderVS(viewsets.ModelViewSet):
     permission_classes=[AllowAny]
     queryset=Order.objects.all()
     serializer_class=OrderSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['wallet_shop', 'id']
     def create(self, request):
         return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
         data = request.data
@@ -137,8 +139,10 @@ class OrderVS(viewsets.ModelViewSet):
 
 class OrderDetailVS(viewsets.ModelViewSet):
     permission_classes=[AllowAny]
-    queryset=Mensaje.objects.all()
+    queryset=OrderDetail.objects.all()
     serializer_class=OrderDetailSerializer
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['order']
     def create(self, request):
         return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
     def update(self, request,**kwargs):
@@ -211,6 +215,7 @@ def order_create(request):
         order = Order.objects.create(
             client=client,
             client_data=data['client_data'],
+            client_location=data['location'],
             # Seller,
             seller=seller,
             seller_data=data['seller_data'],
@@ -235,14 +240,16 @@ def order_create(request):
                     # contract_id=d['contract_id'], # id en el contrato
                     name=d['name'], # Nombre en el contrato
                     # category=categories_string, # Categorias asociadas en el contrato
-                    price=d['price'] # Precio obtenido del contrato
+                    price=d['price'], # Precio obtenido del contrato
+                    comment=d['comment']
                 )
                 if detail.id:
-                    details.append(detail.id)
+                    details.append(detail)
         # chat = Chat.objects.create(usuarios=[client,seller])
         serializer = OrderSerializer(order)
+        serializer2 = OrderDetailSerializer(detail)
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
-        return Response(serializer.data,status=status.HTTP_201_CREATED) # headers=headers
+        return Response({"orden":serializer.data, "odetail":serializer2.data},status=status.HTTP_201_CREATED) # headers=headers
     except Exception as e:
         print(e)
         if order:
