@@ -20,8 +20,8 @@ urlpatterns = [
     path('update-unread/', views.update_unread),
     path('order-create', views.order_create),
     path('order-update-deliver', views.order_update_deliver),
-    path('order-update-statu', views.order_update_cancel)
-    # path('', include(router.urls)),
+    path('order-update-statu', views.order_update_cancel),
+    path('pending-orders-client-side', views.pending_orders_client_side),
 ]
 
 json = {

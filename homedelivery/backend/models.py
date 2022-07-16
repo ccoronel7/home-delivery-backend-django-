@@ -83,6 +83,7 @@ class Order(models.Model):
     seller=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_seller')
     seller_data=models.TextField(null=False)
     seller_location = models.TextField(null=False)
+    name_shop = models.TextField(null=False)
     wallet_shop = models.TextField(null=False)
     # Deliver
     delivery=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_delivery')

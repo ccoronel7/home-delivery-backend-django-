@@ -315,3 +315,19 @@ def order_update_statu(request):
     except Exception as e:
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@csrf_exempt
+@permission_classes([AllowAny])
+def pending_orders_client_side(request):
+    try:
+        params = request.query_params.copy()
+        if not params.get('id',None):
+            return Response('Falta pasar como parametro el "id" del cliente',status=status.HTTP_406_NOT_ACCEPTABLE)
+        orders = Order.objects.filter(client=params['id']).exclude(statu='X').exclude(statu='E')
+        # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        serializer = PendingOrdersSerializer(orders,many=True)
+        return Response(serializer.data,status=status.HTTP_201_CREATED)
+    except Exception as e:
+        print(e)
+        return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)

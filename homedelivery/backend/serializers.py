@@ -170,7 +170,7 @@ class OrderSerializer(serializers.ModelSerializer):
             return ''
         return obj.client.telefono
 
-    client_number = serializers.SerializerMethodField('seller_number_method')
+    seller_number = serializers.SerializerMethodField('seller_number_method')
     def seller_number_method(self, obj):
         if type(obj) == type(OrderedDict()):
             return ''
@@ -180,3 +180,76 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     class Meta: 
         model = OrderDetail
         fields = '__all__'
+
+class PendingOrdersSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Order
+        fields = [
+            'id','client','name_shop','wallet_shop','wallet_seller','productos',
+            'direccion','location','telefono','productos','sub_total','igualacion_rapida'
+        ]
+
+    client = serializers.SerializerMethodField('get_client_id')
+    def get_client_id(self, obj):
+        return obj.client.id
+
+    name_shop = serializers.SerializerMethodField('get_shop_name')
+    def get_shop_name(self, obj):
+        return obj.name_shop
+
+    wallet_shop = serializers.SerializerMethodField('get_shop_wallet')
+    def get_shop_wallet(self, obj):
+        return obj.wallet_shop
+
+    wallet_seller = serializers.SerializerMethodField('get_seller_wallet')
+    def get_seller_wallet(self, obj):
+        return obj.seller.wallet
+
+    productos = serializers.SerializerMethodField('get_order_details')
+    def get_order_details(self, obj):
+        products = []
+        for d in OrderDetail.objects.filter(order=obj):
+            products.append({
+                'name': d.name,
+                'price': d.price,
+                'comment': d.comment,
+            })
+        return products
+
+    direccion = serializers.SerializerMethodField('get_order_directions')
+    def get_order_directions(self, obj):
+        return obj.direccion
+
+    location = serializers.SerializerMethodField('get_order_location')
+    def get_order_location(self, obj):
+        return obj.client_location
+
+    telefono = serializers.SerializerMethodField('get_order_directions')
+    def get_order_directions(self, obj):
+        return obj.client.telefono
+
+    sub_total = serializers.SerializerMethodField('get_sub_total')
+    def get_sub_total(self, obj):
+        sub_total = 0
+        for d in OrderDetail.objects.filter(order=obj):
+            sub_total += d.price
+        return sub_total
+
+    igualacion_rapida = serializers.SerializerMethodField('set_igualacion_rapida')
+    def set_igualacion_rapida(self, obj):
+        return True
+
+ex = {'client': 'localStorage.getItem("walletid")',
+    'name_shop': 'item.name_shop',
+    'wallet_shop': 'item.wallet_shop',
+    'wallet_seller': 'item.wallet_seller',
+    'productos': [{
+        'name': 'item.name',
+        'price': 'item.price',
+        'comment': ''
+    }],
+    'direccion': 'datoa_profile.direccion',
+    'location': 'datoa_profile.location',
+    'telefono': 'datoa_profile.telefono',
+    'sub_total': 'item.price'
+}
