@@ -7,6 +7,7 @@ from django.contrib.auth.forms import PasswordResetForm
 from django.conf import settings
 # Raiz
 from .models import *
+import json
 """ Clases creadas para rest api """
 # Contenido base
 class PerfilSerializer(serializers.ModelSerializer): 
@@ -186,7 +187,8 @@ class PendingOrdersSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id','client','name_shop','wallet_shop','wallet_seller','productos',
-            'direccion','location','telefono','productos','sub_total','igualacion_rapida'
+            'direccion','location','telefono','productos','sub_total','igualacion_rapida',
+            'statu'
         ]
 
     client = serializers.SerializerMethodField('get_client_id')
@@ -216,13 +218,13 @@ class PendingOrdersSerializer(serializers.ModelSerializer):
             })
         return products
 
-    direccion = serializers.SerializerMethodField('get_order_directions')
-    def get_order_directions(self, obj):
-        return obj.direccion
+    # direccion = serializers.SerializerMethodField('get_order_directions')
+    # def get_order_directions(self, obj):
+    #     return obj.direccion
 
     location = serializers.SerializerMethodField('get_order_location')
     def get_order_location(self, obj):
-        return obj.client_location
+        return json.loads(obj.client_location)
 
     telefono = serializers.SerializerMethodField('get_order_directions')
     def get_order_directions(self, obj):
@@ -238,6 +240,10 @@ class PendingOrdersSerializer(serializers.ModelSerializer):
     igualacion_rapida = serializers.SerializerMethodField('set_igualacion_rapida')
     def set_igualacion_rapida(self, obj):
         return True
+
+    statu = serializers.SerializerMethodField('get_statu')
+    def get_statu(self, obj):
+        return obj.statu
 
 ex = {'client': 'localStorage.getItem("walletid")',
     'name_shop': 'item.name_shop',

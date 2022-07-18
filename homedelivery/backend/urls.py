@@ -20,7 +20,8 @@ urlpatterns = [
     path('update-unread/', views.update_unread),
     path('order-create', views.order_create),
     path('order-update-deliver', views.order_update_deliver),
-    path('order-update-statu', views.order_update_cancel),
+    path('order-update-cancel', views.order_update_cancel),
+    path('order-update-statu', views.order_update_statu),
     path('pending-orders-client-side', views.pending_orders_client_side),
 ]
 

@@ -79,12 +79,13 @@ class Order(models.Model):
     client=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_client')
     client_data=models.TextField(null=False)
     client_location = models.TextField(null=False)
+    direccion = models.TextField(null=False)
     # Seller
     seller=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_seller')
-    seller_data=models.TextField(null=False)
-    seller_location = models.TextField(null=False)
-    name_shop = models.TextField(null=False)
-    wallet_shop = models.TextField(null=False)
+    seller_data=models.TextField(null=False,blank=True)
+    seller_location = models.TextField(null=False,blank=True)
+    name_shop = models.TextField(null=False,blank=True)
+    wallet_shop = models.TextField(null=False,blank=True)
     # Deliver
     delivery=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_delivery')
     delivery_data=models.TextField(null=True)
@@ -93,8 +94,9 @@ class Order(models.Model):
     pay_method_data=models.TextField(null=True)
     # Costo
     total_price=models.FloatField(default=0)
+    chat = models.ForeignKey(Chat,on_delete=models.DO_NOTHING)
     # Estado
-    STATUS=(('R','En revision'),('P','Preparando'),('C','En camino'),('E','Entregado'),('X','Cancelado'))
+    STATUS=(('R','En revision'),('N','Pendiente'),('P','Preparando'),('C','En camino'),('E','Entregado'),('B','Recibido'),('X','Cancelado'))
     statu=models.CharField(max_length=1,choices=STATUS,null=False,blank=False,default='R')
     raison_cancel = models.TextField(default='')
     def __str__(self):

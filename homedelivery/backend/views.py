@@ -1,4 +1,5 @@
 # Importes de Rest framework
+from os import system
 from rest_framework import permissions
 from rest_framework import viewsets,status
 from rest_framework.authtoken.serializers import AuthTokenSerializer
@@ -7,7 +8,7 @@ from rest_framework.decorators import api_view,permission_classes,authentication
 from rest_framework.permissions import IsAdminUser,IsAuthenticated,AllowAny
 from rest_framework.response import Response
 from rest_framework.settings import api_settings
-from rest_framework.utils import json
+# from rest_framework.utils import json
 from django_filters.rest_framework import DjangoFilterBackend
 # Importes de Django
 from django.apps import apps
@@ -38,6 +39,7 @@ import pandas as pd
 import csv
 import requests
 import datetime
+import json
 """ Vistas """
 class PerfilVS(viewsets.ModelViewSet):
     permission_classes=[AllowAny]
@@ -86,7 +88,7 @@ class MensajeVS(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         parametros = request.query_params.copy()
-        objetos = self.queryset.filter(chat__exact=parametros['chat']).order_by('id')
+        objetos = self.queryset.filter(chat__exact=parametros['chat']).order_by("id")
         for o in objetos.exclude(usuario=parametros['usuario']):
             o.seen = True
             o.save()
@@ -112,7 +114,7 @@ class OrderVS(viewsets.ModelViewSet):
     queryset=Order.objects.all()
     serializer_class=OrderSerializer
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['wallet_shop', 'id']
+    filterset_fields = ['wallet_shop', "id"]
     def create(self, request):
         return Response(status=status.HTTP_503_SERVICE_UNAVAILABLE)
         data = request.data
@@ -148,7 +150,7 @@ class OrderDetailVS(viewsets.ModelViewSet):
     def update(self, request,**kwargs):
         data = request.data
         order = Order.objects.get(id=data['order'])
-        detail = OrderDetail.objects.get(id=data['id'])
+        detail = OrderDetail.objects.get(id=data["id"])
         try:
             partial = kwargs.pop('partial', False)
             instance = self.get_object()
@@ -174,10 +176,10 @@ def verificar_perfil(request):
     data=request.data
     respuesta={}
     try:
-        perfil=Perfil.objects.get(wallet__exact=data['wallet'])
-        respuesta['id']=perfil.id
+        perfil=Perfil.objects.get(wallet__exact=data["wallet"])
+        respuesta["id"]=perfil.id
         respuesta['nombre']=perfil.nombre
-        respuesta['wallet']=perfil.wallet
+        respuesta["wallet"]=perfil.wallet
         respuesta['delivery']=perfil.delivery
         respuesta['vendedor']=perfil.vendedor
         respuesta['telefono']=perfil.telefono
@@ -185,7 +187,7 @@ def verificar_perfil(request):
         respuesta['location']=perfil.location
         respuesta['token']='token xxx'
     except:
-        respuesta['wallet']=data['wallet']
+        respuesta["wallet"]=data["wallet"]
     return Response(respuesta)
 
 @api_view(["PUT"])
@@ -204,18 +206,24 @@ def update_unread(request):
 def order_create(request):
     data = request.data
     client=Perfil.objects.get(wallet=data['client'])
-    data['client_data']="{'id':%s,'name':%s,'phone':%s,'wallet':%s}"%(client.id,client.nombre,client.telefono,client.wallet)
+    data['client_data']='{"id":%s,"name":"%s","phone":"%s","wallet":"%s"}'%(client.id,client.nombre,client.telefono,client.wallet)
     seller=Perfil.objects.get(wallet=data['wallet_seller'])
-    data['seller_data']="{'id':%s,'name':%s,'phone':%s,'wallet':%s}"%(seller.id,seller.nombre,seller.telefono,seller.wallet)
+    data['seller_data']='{"id":%s,"name":"%s","phone":"%s","wallet":"%s"}'%(seller.id,seller.nombre,seller.telefono,seller.wallet)
     pay_method=PayMethod.objects.all().first()
-    pay_method_data="{'nombre':%s}"%(pay_method.name)
+    pay_method_data='{"nombre":"%s"}'%(pay_method.name)
     order = None
     details = []
+    client_location = json.dumps(data['location'])
     try:
+        chat = Chat.objects.create()
+        chat.usuarios.add(client)
+        chat.usuarios.add(seller)
+        chat.roomName='Order %s'%(chat.id)
+        chat.save()
         order = Order.objects.create(
             client=client,
             client_data=data['client_data'],
-            client_location=data['location'],
+            client_location=client_location,
             # Seller,
             seller=seller,
             seller_data=data['seller_data'],
@@ -225,9 +233,11 @@ def order_create(request):
             delivery=None,
             delivery_data=None,
             # Metodo pago
+            chat=chat,
             pay_method=pay_method,
             pay_method_data=pay_method_data,
-            total_price=data['sub_total']
+            total_price=data['sub_total'],
+            statu='R'
         )
         if (data['productos']):
             total = 0.0
@@ -238,14 +248,13 @@ def order_create(request):
                 detail = OrderDetail.objects.create(
                     order=order,
                     # contract_id=d['contract_id'], # id en el contrato
-                    name=d['name'], # Nombre en el contrato
+                    name=d["name"], # Nombre en el contrato
                     # category=categories_string, # Categorias asociadas en el contrato
                     price=d['price'], # Precio obtenido del contrato
                     comment=d['comment']
                 )
                 if detail.id:
                     details.append(detail)
-        # chat = Chat.objects.create(usuarios=[client,seller])
         serializer = OrderSerializer(order)
         serializer2 = OrderDetailSerializer(detail)
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
@@ -256,10 +265,10 @@ def order_create(request):
             if order.id:
                 order.delete()
         for d in details:
-            OrderDetail.objects.get(id=d).delete()
+            OrderDetail.objects.get(id=d.id).delete()
         return Response('%s'%(e),status=status.HTTP_500_INTERNAL_SERVER_ERROR) # headers=headers
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @csrf_exempt
 @permission_classes([AllowAny])
 def order_update_deliver(request):
@@ -267,8 +276,8 @@ def order_update_deliver(request):
         data = request.data
         delivery=Perfil.objects.get(id=data['delivery'])
         if delivery.delivery:
-            data['delivery_data']="{'id':%s,'name':%s,'phone':%s,'wallet':%s}"%(delivery.id,delivery.nombre,delivery.telefono,delivery.wallet)
-            order = Order.objects.get(id=data['id'])
+            data['delivery_data']='{"id":%s,"name":%s,"phone":%s,"wallet":%s}'%(delivery.id,delivery.nombre,delivery.telefono,delivery.wallet)
+            order = Order.objects.get(id=data["id"])
             order.delivery = delivery
             order.delivery_data = data['delivery_data']
             order.save()
@@ -281,13 +290,13 @@ def order_update_deliver(request):
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @csrf_exempt
 @permission_classes([AllowAny])
 def order_update_cancel (request):
     try:
         data = request.data
-        order = Order.objects.get(id=data['id'])
+        order = Order.objects.get(id=data["id"])
         # if client.usuario == usuario or seller.usuario == usuario:
         order.raison_cancel = data['razon']
         order.statu = 'X'
@@ -305,10 +314,11 @@ def order_update_cancel (request):
 def order_update_statu(request):
     try:
         data = request.data
-        order = Order.objects.get(id=data['id'])
+        order = Order.objects.get(id=data["id"])
         # if order.client.usuario == usuario or order.seller.usuario == usuario:
         order.statu = data['statu']
         order.save()
+        mandar_mensaje(order)
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         serializer = OrderSerializer(order)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
@@ -316,15 +326,32 @@ def order_update_statu(request):
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+def mandar_mensaje(pedido):
+    chat = pedido.chat
+    mensaje = Mensaje(chat=chat,system=True)
+    if pedido.statu == 'N':
+        mensaje.usuario = pedido.seller
+        mensaje.content = 'El vendedor ha aceptado el pedido'
+    elif pedido.statu == 'P':
+        mensaje.usuario = pedido.client
+        mensaje.content = 'El cliente ha pagado'
+    elif pedido.statu == 'C':
+        mensaje.usuario = pedido.seller
+        mensaje.content = 'El pedido esta en camino'
+    elif pedido.statu == 'B':
+        mensaje.usuario = pedido.client
+        mensaje.content = 'El cliente recibió el pedido'
+    mensaje.save()
+
 @api_view(["GET"])
 @csrf_exempt
 @permission_classes([AllowAny])
 def pending_orders_client_side(request):
     try:
         params = request.query_params.copy()
-        if not params.get('id',None):
+        if not params.get("id",None):
             return Response('Falta pasar como parametro el "id" del cliente',status=status.HTTP_406_NOT_ACCEPTABLE)
-        orders = Order.objects.filter(client=params['id']).exclude(statu='X').exclude(statu='E')
+        orders = Order.objects.filter(client=params["id"]).exclude(statu='X').exclude(statu='B')
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         serializer = PendingOrdersSerializer(orders,many=True)
         return Response(serializer.data,status=status.HTTP_201_CREATED)
