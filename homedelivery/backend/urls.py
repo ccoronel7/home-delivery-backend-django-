@@ -22,7 +22,8 @@ urlpatterns = [
     path('order-update-deliver', views.order_update_deliver),
     path('order-update-cancel', views.order_update_cancel),
     path('order-update-statu', views.order_update_statu),
-    path('pending-orders-client-side', views.pending_orders_client_side),
+    path('pending-orders-client-side/', views.pending_orders_client_side),
+    path('pending-orders-delivery-side/', views.pending_orders_delivery_side),
 ]
 
 json = {

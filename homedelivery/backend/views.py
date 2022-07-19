@@ -362,7 +362,7 @@ def pending_orders_client_side(request):
 @api_view(["GET"])
 @csrf_exempt
 @permission_classes([AllowAny])
-def pending_orders_delivert_side(request):
+def pending_orders_delivery_side(request):
     try:
         params = request.query_params.copy()
         if not params.get("id",None):

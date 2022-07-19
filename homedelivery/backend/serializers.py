@@ -196,7 +196,7 @@ class PendingOrdersSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             'id','client','name_shop','wallet_shop','wallet_seller','productos',
-            'direccion','location','telefono','productos','sub_total','igualacion_rapida',
+            'direccion','location','telefono','sub_total','igualacion_rapida',
             'statu'
         ]
 
@@ -258,14 +258,44 @@ class PendingOrdersDeliverSerializer(serializers.ModelSerializer):
     class Meta: 
         model = Order
         fields = [
-            'id','client','name_shop','wallet_shop','wallet_seller','productos',
-            'direccion','location','telefono','productos','sub_total','igualacion_rapida',
+            'id','client','name_shop','wallet_shop','wallet_seller','details',
+            'direccion','location','number','sub_total','deliver_cost',
             'statu'
         ]
 
     client = serializers.SerializerMethodField('get_client_id')
     def get_client_id(self, obj):
-        return obj.client.nombre
+        return obj.client.wallet
+
+    wallet_shop = serializers.SerializerMethodField('get_shop_wallet')
+    def get_shop_wallet(self, obj):
+        return obj.wallet_shop
+
+    wallet_seller = serializers.SerializerMethodField('get_seller_wallet')
+    def get_seller_wallet(self, obj):
+        return obj.seller.wallet
+
+    details = serializers.SerializerMethodField('get_order_details')
+    def get_order_details(self, obj):
+        products = []
+        for d in OrderDetail.objects.filter(order=obj):
+            products.append({
+                'name': d.name,
+                'price': d.price,
+                'comment': d.comment,
+            })
+        return products
+
+    sub_total = serializers.SerializerMethodField('get_sub_total')
+    def get_sub_total(self, obj):
+        sub_total = 0
+        for d in OrderDetail.objects.filter(order=obj):
+            sub_total += d.price
+        return sub_total
+
+    number = serializers.SerializerMethodField('get_order_directions')
+    def get_order_directions(self, obj):
+        return obj.client.telefono
 
     location = serializers.SerializerMethodField('get_order_location')
     def get_order_location(self, obj):

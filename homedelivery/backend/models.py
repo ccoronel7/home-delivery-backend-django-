@@ -93,6 +93,7 @@ class Order(models.Model):
     pay_method=models.ForeignKey(PayMethod,null=True,on_delete=models.SET_NULL)
     pay_method_data=models.TextField(null=True)
     # Costo
+    deliver_cost=models.FloatField(default=0)
     total_price=models.FloatField(default=0)
     chat = models.ForeignKey(Chat,on_delete=models.DO_NOTHING)
     # Estado
