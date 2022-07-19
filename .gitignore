@@ -130,3 +130,4 @@ dmypy.json
 
 # Login
 login_noir.py
+db.sqlite3
