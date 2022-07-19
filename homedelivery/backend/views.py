@@ -283,7 +283,7 @@ def order_update_deliver(request):
             order.save()
             # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
             serializer = OrderSerializer(order)
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
         else:
             return Response('El usuario solicitado no es un delivery',status=status.HTTP_406_NOT_ACCEPTABLE)
     except Exception as e:
@@ -303,12 +303,12 @@ def order_update_cancel (request):
         order.save()
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         serializer = OrderSerializer(order)
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
     except Exception as e:
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-@api_view(["POST"])
+@api_view(["PUT"])
 @csrf_exempt
 @permission_classes([AllowAny])
 def order_update_statu(request):
@@ -354,7 +354,23 @@ def pending_orders_client_side(request):
         orders = Order.objects.filter(client=params["id"]).exclude(statu='X').exclude(statu='B')
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         serializer = PendingOrdersSerializer(orders,many=True)
-        return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@csrf_exempt
+@permission_classes([AllowAny])
+def pending_orders_delivert_side(request):
+    try:
+        params = request.query_params.copy()
+        if not params.get("id",None):
+            return Response('Falta pasar como parametro el "id" del deliver',status=status.HTTP_406_NOT_ACCEPTABLE)
+        orders = Order.objects.filter(client=params["id"])
+        # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
+        serializer = PendingOrdersDeliverSerializer(orders,many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
     except Exception as e:
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)

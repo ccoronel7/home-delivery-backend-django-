@@ -1,5 +1,6 @@
 # Importes de  Rest Api
 from collections import OrderedDict
+from requests import request
 from rest_framework import fields, serializers
 # Importes de Django
 from django.contrib.auth.models import User, Permission, Group
@@ -145,6 +146,14 @@ class OrderSerializer(serializers.ModelSerializer):
                     return value.nombre
         return obj.client.nombre
 
+    client_location = serializers.SerializerMethodField('client_location_method')
+    def client_location_method(self, obj):
+        return json.loads(obj.client_location)
+
+    delivery_price = serializers.SerializerMethodField('delivery_price_method')
+    def delivery_price_method(self, obj):
+        return 2000000000000000000000000 # obj.delivery_price if obj.delivery_price else
+
     seller_name = serializers.SerializerMethodField('seller_name_method')
     def seller_name_method(self, obj):
         if type(obj) == type(OrderedDict()):
@@ -244,6 +253,28 @@ class PendingOrdersSerializer(serializers.ModelSerializer):
     statu = serializers.SerializerMethodField('get_statu')
     def get_statu(self, obj):
         return obj.statu
+
+class PendingOrdersDeliverSerializer(serializers.ModelSerializer):
+    class Meta: 
+        model = Order
+        fields = [
+            'id','client','name_shop','wallet_shop','wallet_seller','productos',
+            'direccion','location','telefono','productos','sub_total','igualacion_rapida',
+            'statu'
+        ]
+
+    client = serializers.SerializerMethodField('get_client_id')
+    def get_client_id(self, obj):
+        return obj.client.nombre
+
+    location = serializers.SerializerMethodField('get_order_location')
+    def get_order_location(self, obj):
+        return json.loads(obj.client_location)
+
+    statu = serializers.SerializerMethodField('get_statu')
+    def get_statu(self, obj):
+        return obj.statu
+
 
 ex = {'client': 'localStorage.getItem("walletid")',
     'name_shop': 'item.name_shop',
