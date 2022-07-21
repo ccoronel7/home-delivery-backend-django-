@@ -83,12 +83,13 @@ class Order(models.Model):
     # Seller
     seller=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_seller')
     seller_data=models.TextField(null=False,blank=True)
-    seller_location = models.TextField(null=False,blank=True)
+    seller_location = models.TextField(null=False)
     name_shop = models.TextField(null=False,blank=True)
     wallet_shop = models.TextField(null=False,blank=True)
     # Deliver
     delivery=models.ForeignKey(Perfil,null=True,on_delete=models.SET_NULL,related_name='profile_delivery')
     delivery_data=models.TextField(null=True)
+    possible=models.ManyToManyField(Perfil, blank=True)
     # Metodo pago
     pay_method=models.ForeignKey(PayMethod,null=True,on_delete=models.SET_NULL)
     pay_method_data=models.TextField(null=True)

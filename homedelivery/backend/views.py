@@ -227,7 +227,7 @@ def order_create(request):
             # Seller,
             seller=seller,
             seller_data=data['seller_data'],
-            seller_location='',
+            seller_location=data['seller_location'],
             wallet_shop=data['wallet_shop'],
             # Deliver
             delivery=None,
@@ -318,6 +318,8 @@ def order_update_statu(request):
         # if order.client.usuario == usuario or order.seller.usuario == usuario:
         order.statu = data['statu']
         order.save()
+        if order.statu == 'P':
+            search_deliver(order)
         mandar_mensaje(order)
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         serializer = OrderSerializer(order)
@@ -325,6 +327,40 @@ def order_update_statu(request):
     except Exception as e:
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+"""
+{"id":26,"statu":"P"}
+{"lat":10.162452,"lng":-68.004310}
+"""
+def search_deliver(order):
+    client_location = json.loads(order.client_location)
+    seller_location = json.loads(order.seller_location)
+    usuarios = Perfil.objects.filter(deliver=True)
+    for u in usuarios:
+        print(u.__dict__,client_location,seller_location)
+        location = json.loads(u.location)
+        # Location client
+        lat_cli_menor = client_location['lat'] - 0.01
+        lat_cli_mayor = client_location['lat'] + 0.01
+        lng_cli_menor = client_location['lng'] - 0.01
+        lng_cli_mayor = client_location['lng'] + 0.01
+        # Location shop
+        lat_sel_menor = seller_location['lat'] - 0.01
+        lat_sel_mayor = seller_location['lat'] + 0.01
+        lng_sel_menor = seller_location['lng'] - 0.01
+        lng_sel_mayor = seller_location['lng'] + 0.01
+        # If to verify location of delivery / First part (Verify by client)
+        if (((location['lat'] > lat_cli_menor)
+        and (location['lat'] < lat_cli_mayor)
+        and (location['lng'] > lng_cli_menor)
+        and (location['lng'] < lng_cli_mayor))
+        # Second part (Verify by shop)
+        or ((location['lat'] > lat_sel_menor)
+        and (location['lat'] < lat_sel_mayor)
+        and (location['lat'] > lng_sel_menor)
+        and (location['lat'] < lng_sel_mayor)
+        )):
+            print('hai')
+        # .exists('Hai):
 
 def mandar_mensaje(pedido):
     chat = pedido.chat
@@ -367,10 +403,37 @@ def pending_orders_delivery_side(request):
         params = request.query_params.copy()
         if not params.get("id",None):
             return Response('Falta pasar como parametro el "id" del deliver',status=status.HTTP_406_NOT_ACCEPTABLE)
-        orders = Order.objects.filter(client=params["id"])
+        orders_all = Order.objects.all().exclude(statu='R')
+        orders_aso = orders_all.filter(delivery=params["id"])
+        orders_dis = orders_all.filter(possible=params["id"])
+        orders = orders_aso | orders_dis
         # headers = {'Location': str(data[api_settings.URL_FIELD_NAME])}
         serializer = PendingOrdersDeliverSerializer(orders,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
+    except Exception as e:
+        print(e)
+        return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+@api_view(["GET"])
+@csrf_exempt
+@permission_classes([AllowAny])
+def acept_order(request):
+    try:
+        params = request.query_params.copy()
+        if not params.get("id",None) and not params.get("user",None):
+            return Response('Falta pasar como parametro el "id" del deliver',status=status.HTTP_406_NOT_ACCEPTABLE)
+        order = Order.objects.get(id=params["id"])
+        user = Perfil.objects.get(id=params["user"])
+        if user in order.possible:
+            order.delivery = user
+            vehicle = Deliver.objects.get(perfil=user)
+            order.delivery_data = '{"id":"%s","name":"%s","phone":"%s","wallet":"%s","vehicle":"%s"}'%(user.id,user.nombre,user.telefono,user.wallet,vehicle.id)
+            order.possible = None
+            order.save()
+            serializer = PendingOrdersDeliverSerializer(order)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        else:
+            raise Exception('Usuario no disponible para este pedido')
     except Exception as e:
         print(e)
         return Response('Ha ocurrido un error',status=status.HTTP_500_INTERNAL_SERVER_ERROR)
